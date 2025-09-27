@@ -1,0 +1,84 @@
+import bpy
+from lpqflv import bl_ops
+from lpqflv import bl_sequencer as bs
+from lpqflv_camerasManager import CameraManager as cm
+
+class VSE_CreateShot(bl_ops.Operator) :
+    bl_idname = "lpqflv_multicam_render.create_shot"
+    bl_label = "Create a New Shot"
+    bl_description = "Add a strip that will represent a new shot"
+    
+    @classmethod
+    def poll(cls, context) :
+        return context.area and context.area.type == "SEQUENCE_EDITOR"
+
+    def execute(self, context) : 
+        names = []
+        for s in bs.sequences() : 
+            if s.mapp.type == "shot" : 
+                names.append(s.name)
+
+        shName = cm.nameToNew()
+        VSE_CreateShot.create(shName)
+        return {'FINISHED'}
+
+    @classmethod
+    def create(cls, name) : 
+        strip = bs.sequences().new_effect(name, "TEXT", bs.availableChannel(), bpy.context.scene.frame_current, bpy.context.scene.frame_current + 24)
+
+class VSE_TransformToShot(bl_ops.Operator) :
+    bl_idname = "lpqflv_multicam_render.transform_to_shot"
+    bl_label = "Set as Shot"
+    bl_description = "Set the selected strip as a shot"
+
+    set : bpy.props.BoolProperty(default=True)
+    
+    @classmethod
+    def poll(cls, context) :
+        return context.area and context.area.type == "SEQUENCE_EDITOR"
+
+    def execute(self, context) : 
+        return {'FINISHED'}
+
+    @classmethod
+    def transform(cls, strip) : 
+        if not strip : 
+            return 
+        strip.mapp.type = "shot"
+        return
+
+class VSE_CreateSeq(bl_ops.Operator) :
+    bl_idname = "lpqflv_multicam_render.create_seq"
+    bl_label = "Create a New Sequence"
+    bl_description = "Create a new sequence from selected shots"
+    
+    @classmethod
+    def poll(cls, context) :
+        return context.area and context.area.type == "SEQUENCE_EDITOR"
+
+    def execute(self, context) : 
+        return {'FINISHED'}
+
+class VSE_OpenSeq(bl_ops.Operator) :
+    bl_idname = "lpqflv_multicam_render.open_seq"
+    bl_label = "Open this sequence"
+    bl_description = "Open the file linked to this sequence"
+
+    type : bpy.props.StringProperty()
+    
+    @classmethod
+    def poll(cls, context) :
+        return context.area and context.area.type == "SEQUENCE_EDITOR"
+
+    def execute(self, context) : 
+        return {'FINISHED'}
+
+cls = (VSE_CreateSeq, VSE_OpenSeq, VSE_TransformToShot, VSE_CreateShot, )
+
+def register() : 
+    for c in cls : 
+        bpy.utils.register_class(c)
+
+def unregister() : 
+    for c in cls : 
+        bpy.utils.unregister_class(c)

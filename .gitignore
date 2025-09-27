@@ -1,0 +1,14 @@
+*.pyc
+*.mp4
+*.blend
+*.blend*
+*.jpg
+*.png
+*.webp
+*.obj
+*.mtl
+*.fbx
+*.un~
+*.swp
+*.bak
+*__pycache__*
