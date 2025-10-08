@@ -17,6 +17,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+if ("Strip" in bpy.types.__dict__):
+    bpy.types.Sequence = bpy.types.Strip
 
 from lpqflv_camerasManager import CameraManager as cm
 from lpqflv_camerasManager import config  as cf

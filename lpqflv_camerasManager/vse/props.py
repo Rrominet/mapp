@@ -1,4 +1,6 @@
 import bpy
+if ("Strip" in bpy.types.__dict__):
+    bpy.types.Sequence = bpy.types.Strip
 from lpqflv_camerasManager.vse import strips
 from lpqflv import bl_ui
 
