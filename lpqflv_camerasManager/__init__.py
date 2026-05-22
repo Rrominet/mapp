@@ -20,7 +20,7 @@
 bl_info = {
     "name": "MAPP : Pipeline and Cameras Manager",
     "author": "Romain Gilliot",
-    "version": (7, 5, 2),
+    "version": (7, 5, 3),
     "blender" : (4, 0, 1),
     "location": "Pipeline Editor, Property Editor, VSE",
     "description": "Manage your project with an advanced Pipeline Tool.",

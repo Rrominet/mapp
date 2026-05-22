@@ -1653,6 +1653,21 @@ class MCR_OffsetCams(bl_ops.Operator) :
 
         return {'FINISHED'}
 
+class MCR_SetResolutionFromActiveCamera(bl_ops.Operator) :
+    bl_idname = "lpqflv_multicam_render.set_resolution_from_active_camera"
+    bl_label = "Set Scene Resolution"
+    bl_description = "Set scene resolution from active camera (active object as camera - not the active camera in the scene)"
+    
+    def execute(self, context) : 
+        obj = context.object
+        if obj.type != "CAMERA" : 
+            return {'FINISHED'}
+        res = obj.data.cm.res
+        context.scene.render.resolution_x = res.res[0]
+        context.scene.render.resolution_y = res.res[1]
+        context.scene.render.resolution_percentage = res.resPercentage
+        return {'FINISHED'}
+
 def register () : 
     bpy.utils.register_class(MkActiveCamera)
     bpy.utils.register_class(SelectCamera)
@@ -1710,6 +1725,7 @@ def register () :
     bpy.utils.register_class(CreateDOFTarget)
     bpy.utils.register_class(MCR_ManageCamSE)
     bpy.utils.register_class(MCR_OffsetCams)
+    bpy.utils.register_class(MCR_SetResolutionFromActiveCamera)
 
     bpy.utils.register_class(PIPE_DuplicateCurrentScene)
 
@@ -1778,3 +1794,5 @@ def unregister () :
 
     bpy.utils.unregister_class(PIPE_DuplicateCurrentScene)
     bpy.utils.unregister_class(MCR_OffsetCams)
+
+    bpy.utils.unregister_class(MCR_SetResolutionFromActiveCamera)

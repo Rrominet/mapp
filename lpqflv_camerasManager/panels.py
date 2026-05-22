@@ -536,6 +536,7 @@ class MCR_CameraSettingsPanel(bpy.types.Panel):
         if cam.overrideResolution : 
             c.prop(cam.res, "res")
             c.prop(cam.res, "resPercentage")
+            c.operator(ops.MCR_SetResolutionFromActiveCamera.bl_idname)
         c.prop(cam, "overrideSamples")
         if cam.overrideSamples : 
             c.prop(cam.samples, "use_adaptive_threshold")
