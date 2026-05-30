@@ -22,7 +22,7 @@ class VSE_CreateShot(bl_ops.Operator) :
 
     def execute(self, context) : 
         names = []
-        for s in bs.sequences() : 
+        for s in bs.strips() : 
             if s.mapp.type == "shot" : 
                 names.append(s.name)
 
@@ -32,7 +32,7 @@ class VSE_CreateShot(bl_ops.Operator) :
 
     @classmethod
     def create(cls, name) : 
-        strip = bs.sequences().new_effect(name, "TEXT", bs.availableChannel(), bpy.context.scene.frame_current, frame_end=bpy.context.scene.frame_current + 24)
+        strip = bs.strips().new_effect(name, "TEXT", bs.availableChannel(), bpy.context.scene.frame_current, frame_end=bpy.context.scene.frame_current + 24)
         strip.text = name
         VSE_TransformToShot.transform(strip)
 
@@ -71,7 +71,7 @@ class VSE_TransformToShot(bl_ops.Operator) :
 class VSE_TransformToSeq(bl_ops.Operator) :
     bl_idname = "lpqflv_multicam_render.transform_to_seq"
     bl_label = "Set as Sequence"
-    bl_description = "Set the selected strip as a sequences"
+    bl_description = "Set the selected strip as a strips"
 
     set : bpy.props.BoolProperty(default=True)
     
@@ -128,21 +128,21 @@ class VSE_CreateSeq(bl_ops.Operator) :
     def create(cls, shots, name, number, type="Animation", user_name="") : 
         if not shots : 
             return
-        fs = shots[0].frame_final_start
-        fe = shots[0].frame_final_end
+        fs = shots[0].left_handle
+        fe = shots[0].right_handle
 
         for s in shots : 
-            if s.frame_final_start < fs : 
-                fs = s.frame_final_start
-            if s.frame_final_end > fe : 
-                fe = s.frame_final_end
+            if s.left_handle < fs : 
+                fs = s.left_handle
+            if s.right_handle > fe : 
+                fe = s.right_handle
 
         ch = 1
         for s in shots :
             if s.channel > ch : 
                 ch = s.channel
 
-        strip = bs.sequences().new_effect(name, "TEXT", ch+1, fs, frame_end=fe)
+        strip = bs.strips().new_effect(name, "TEXT", ch+1, fs, frame_end=fe)
         strip.text = name
         VSE_TransformToSeq.transform(strip)
 
@@ -262,7 +262,7 @@ class VSE_LinkShotsToSeq(bl_ops.Operator) :
 class VSE_UpdateSeqsUI(bl_ops.Operator) :
     bl_idname = "lpqflv_multicam_render.update_seqs_ui"
     bl_label = "Update Sequences"
-    bl_description = "Update the channels and the frame start and end of all the sequences from theire children"
+    bl_description = "Update the channels and the frame start and end of all the strips from theire children"
     
     @classmethod
     def poll(cls, context) :
@@ -281,7 +281,7 @@ class VSE_OpenSeq(bpy.types.Operator) :
     
     @classmethod
     def poll(cls, context) :
-        return context.active_sequence_strip and context.active_sequence_strip.mapp.type != "none"
+        return context.active_strip and context.active_strip.mapp.type != "none"
 
     def invoke(self, context, event) :
         if not context.scene.projectPath : 
@@ -290,7 +290,7 @@ class VSE_OpenSeq(bpy.types.Operator) :
         return self.execute(context)
 
     def execute(self, context) : 
-        s = context.active_sequence_strip
+        s = context.active_strip
         if not bpy.data.filepath :
             filepath = context.scene.projectPath + os.sep + ".." + os.sep + "03_postprod" 
             if not os.path.isdir(filepath) : 
@@ -360,11 +360,11 @@ class VSE_AddReviewToShot(bl_ops.Operator) :
         fe = fs + 20
 
         ch = 1
-        for s in context.sequences :
+        for s in context.strips :
             if s.channel > ch : 
                 ch = s.channel
 
-        strip = bs.sequences().new_effect(self.review, "TEXT", ch+1, fs, frame_end=fe)
+        strip = bs.strips().new_effect(self.review, "TEXT", ch+1, fs, frame_end=fe)
         strip.text = self.review
         strip.color[0] = 1
         strip.color[1] = 0

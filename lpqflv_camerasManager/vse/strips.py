@@ -31,22 +31,22 @@ def scaleSeqFromShots(seq, shots) :
     gshots = []
     for s in shots :
         if type(s) == str : 
-            s = bs.sequences_all()[s]
+            s = bs.strips_all()[s]
             gshots.append(s)
         else : 
             gshots.append(s)
 
-    fs = gshots[0].frame_final_start
-    fe = gshots[0].frame_final_end
+    fs = gshots[0].left_handle
+    fe = gshots[0].right_handle
 
     for s in gshots : 
-        if s.frame_final_start < fs : 
-            fs = s.frame_final_start
-        if s.frame_final_end > fe : 
-            fe = s.frame_final_end
+        if s.left_handle < fs : 
+            fs = s.left_handle
+        if s.right_handle > fe : 
+            fe = s.right_handle
 
-    seq.frame_final_start = fs
-    seq.frame_final_end = fe
+    seq.left_handle = fs
+    seq.right_handle = fe
 
 #if shots are a list of strings, its works to
 def setSeqChannelFromShots(seq, shots) : 
@@ -55,7 +55,7 @@ def setSeqChannelFromShots(seq, shots) :
     gshots = []
     for s in shots :
         if type(s) == str : 
-            s = bs.sequences_all()[s]
+            s = bs.strips_all()[s]
             gshots.append(s)
         else : 
             gshots.append(s)
@@ -70,8 +70,8 @@ def children(seq) :
         chs = json.loads(seq.mapp.children)
         _r = []
         for c in chs : 
-            if c in bs.sequences_all() : 
-                _r.append(bs.sequences_all()[c])
+            if c in bs.strips_all() : 
+                _r.append(bs.strips_all()[c])
         return _r
     except : return []
 
@@ -88,9 +88,9 @@ def removeShotFromSeq(seq, shot, updateUi=True) :
     if (not seq) or (not shot) : 
         return
     if type(shot) == str : 
-        shot = bs.sequences_all()[shot]
+        shot = bs.strips_all()[shot]
     if (type(seq) == str) : 
-        seq = bs.sequences_all()[seq]
+        seq = bs.strips_all()[seq]
     shot.mapp.seq = ""
     chs = children(seq)
 
@@ -103,35 +103,35 @@ def removeShotFromSeq(seq, shot, updateUi=True) :
 
 def allShots() : 
     shots = []
-    for s in bs.sequences_all() : 
+    for s in bs.strips_all() : 
         if s.mapp.type == "shot" : 
             shots.append(s)
     return shots
 
 def shots() : 
     shots = []
-    for s in bs.sequences() : 
+    for s in bs.strips() : 
         if s.mapp.type == "shot" : 
             shots.append(s)
     return shots
 
 def allSeqs() :
     seqs = []
-    for s in bs.sequences_all() : 
+    for s in bs.strips_all() : 
         if s.mapp.type == "seq" : 
             seqs.append(s)
     return seqs
 
 def seqs() :
     seqs = []
-    for s in bs.sequences() : 
+    for s in bs.strips() : 
         if s.mapp.type == "seq" : 
             seqs.append(s)
     return seqs
 
 def removeShotFromAllSeq(shot) : 
     if (type(shot) == str) : 
-        shot = bs.sequences_all()[shot]
+        shot = bs.strips_all()[shot]
     for s in allSeqs() : 
         removeShotFromSeq(s, shot)
 
@@ -160,14 +160,14 @@ def setStripTextFromProps(strip) :
 
     chs = json.loads(strip.mapp.children)
     for c in chs : 
-        bs.sequences_all()[c].mapp.seq = text
+        bs.strips_all()[c].mapp.seq = text
 
 def seq(s) : 
     if s.mapp.type == "none" : 
         raise Exception("The Strip is not a Shot/Seq")
     
     elif s.mapp.type == "shot" : 
-        s = bs.sequences_all()[s.map.seq]
+        s = bs.strips_all()[s.map.seq]
 
     return s
 

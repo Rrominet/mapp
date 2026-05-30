@@ -17,22 +17,20 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-if ("Strip" in bpy.types.__dict__):
-    bpy.types.Sequence = bpy.types.Strip
 
 from lpqflv_camerasManager import CameraManager as cm
 from lpqflv_camerasManager import config  as cf
 from lpqflv import bl_events as ev
 
-def sequences() : 
+def strips() : 
     if not bpy.context.scene.sequence_editor : 
         bpy.context.scene.sequence_editor_create()
-    return bpy.context.scene.sequence_editor.sequences
+    return bpy.context.scene.sequence_editor.strips
 
-def sequences_all() : 
+def strips_all() : 
     if not bpy.context.scene.sequence_editor : 
         bpy.context.scene.sequence_editor_create()
-    return bpy.context.scene.sequence_editor.sequences_all
+    return bpy.context.scene.sequence_editor.strips_all
 
 def strip(camera) : 
     if camera.name != camera.data.cm.strip : 
@@ -41,15 +39,15 @@ def strip(camera) :
     return stripFromData(data)
 
 def stripFromData(data) : 
-    if data.cm.strip not in sequences_all() : 
+    if data.cm.strip not in strips_all() : 
         return None
     
-    return sequences_all()[data.cm.strip]
+    return strips_all()[data.cm.strip]
 
 def availableChannel() : 
     r_channel = 1
     channels = []
-    for seq in sequences() : 
+    for seq in strips() : 
         channels.append(seq.channel)
         
     while r_channel in channels : 
@@ -74,14 +72,14 @@ def isStartEndOk(start, end) :
 def createStrip(camera) : 
     if not strip(camera) : 
         ch = availableChannel()
-        camStrip = sequences().new_effect(camera.name,
+        camStrip = strips().new_effect(camera.name,
                                        'ADJUSTMENT', 
                                        ch, 
                                        bpy.context.scene.frame_start,
                                        frame_end=bpy.context.scene.frame_end)
         camStrip.cm.isCamera = True
-        camStrip.frame_final_start = camera.data.cm.start
-        camStrip.frame_final_end = camera.data.cm.end
+        camStrip.left_handle = camera.data.cm.start
+        camStrip.right_handle = camera.data.cm.end
         camera.data.cm.strip = camStrip.name
         
     else : 
@@ -92,7 +90,7 @@ def removeStrip(camera) :
     if not camStrip : 
         return 
     else : 
-        sequences().remove(camStrip)
+        strips().remove(camStrip)
         camera.data.cm.strip = ""
 
 # on change functions # 
@@ -100,12 +98,12 @@ def removeStrip(camera) :
 def onStartChange (self, ctx) : 
     s = stripFromData(self.id_data)
     if s : 
-        s.frame_final_start = self.start
+        s.left_handle = self.start
 
 def onEndChange (self, ctx) : 
     s = stripFromData(self.id_data)
     if s : 
-        s.frame_final_end = self.end
+        s.right_handle = self.end
 
 def onHasStripChange (self, ctx) : 
     if cm.hasStrips() : 
@@ -220,7 +218,7 @@ def register () :
     bpy.utils.register_class(CameraManagerObjectProps)
     bpy.utils.register_class(CameraManagerSceneProps)
 
-    bpy.types.Sequence.cm = bpy.props.PointerProperty(type=CameraManagerSeqProps)
+    bpy.types.Strip.cm = bpy.props.PointerProperty(type=CameraManagerSeqProps)
     bpy.types.Camera.cm = bpy.props.PointerProperty(type=CameraManagerCamProps)
     bpy.types.Object.cm = bpy.props.PointerProperty(type=CameraManagerObjectProps)
     bpy.types.Scene.cm = bpy.props.PointerProperty(type=CameraManagerSceneProps)
@@ -234,8 +232,3 @@ def unregister () :
     bpy.utils.unregister_class(CameraManagerObjectProps)
     bpy.utils.unregister_class(CameraManagerSceneProps)
     bpy.utils.unregister_class(Resolution)
-
-    del bpy.types.Sequence.cm
-    del bpy.types.Camera.cm
-    del bpy.types.Object.cm
-    del bpy.types.Scene.cm

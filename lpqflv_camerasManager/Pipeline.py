@@ -278,10 +278,10 @@ class Pipeline :
                 cfg.EXISTING_SEQS.append ((d,d,d,"",i))
                 i+=1
                 
-                bpy.types.Scene.existingScenes = bpy.props.EnumProperty(items=cfg.EXISTING_SEQS,  name="Existing sequences ")
+                bpy.types.Scene.existingScenes = bpy.props.EnumProperty(items=cfg.EXISTING_SEQS,  name="Existing strips")
                 
         else : 
-            bpy.types.Scene.existingScenes = bpy.props.EnumProperty(items=cfg.EXISTING_SEQS,  name="Existing sequences ")
+            bpy.types.Scene.existingScenes = bpy.props.EnumProperty(items=cfg.EXISTING_SEQS,  name="Existing strips")
 
         ## DONE ##
         

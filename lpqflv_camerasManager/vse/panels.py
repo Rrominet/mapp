@@ -9,18 +9,18 @@ class _PT_MappStripPanel(bpy.types.Panel) :
 
     def draw(self, context) : 
         l = self.layout
-        if (not context.active_sequence_strip) : return
-        if context.active_sequence_strip.mapp.type == "none" :
+        if (not context.active_strip) : return
+        if context.active_strip.mapp.type == "none" :
             l.label(text="This strip is not a sequence or a shot.")
             return
-        elif context.active_sequence_strip.mapp.type == "shot" :
+        elif context.active_strip.mapp.type == "shot" :
             l.label(text="Shot property : ")
-            l.prop(context.active_sequence_strip.mapp, "seq")
-        elif context.active_sequence_strip.mapp.type == "seq" :
+            l.prop(context.active_strip.mapp, "seq")
+        elif context.active_strip.mapp.type == "seq" :
             l.label(text="Sequence property : ")
-            l.prop(context.active_sequence_strip.mapp, "seq_name")
-            l.prop(context.active_sequence_strip.mapp, "seq_type")
-            l.prop(context.active_sequence_strip.mapp, "seq_number")
+            l.prop(context.active_strip.mapp, "seq_name")
+            l.prop(context.active_strip.mapp, "seq_type")
+            l.prop(context.active_strip.mapp, "seq_number")
 
 cls = (_PT_MappStripPanel,)
 

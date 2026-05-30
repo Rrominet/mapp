@@ -1,12 +1,10 @@
 import bpy
-if ("Strip" in bpy.types.__dict__):
-    bpy.types.Sequence = bpy.types.Strip
 from lpqflv_camerasManager.vse import strips
 from lpqflv import bl_ui
 
 def updateName(self, ctx) : 
     try : 
-        strips.setStripTextFromProps(ctx.active_sequence_strip)
+        strips.setStripTextFromProps(ctx.active_strip)
     except : pass
 
 class MappSequenceProps(bpy.types.PropertyGroup) :
@@ -36,7 +34,7 @@ cls = (MappSequenceProps, MappSequenceSceneProps)
 def register() : 
     for c in cls : 
         bpy.utils.register_class(c)
-    bpy.types.Sequence.mapp = bpy.props.PointerProperty(type=MappSequenceProps)
+    bpy.types.Strip.mapp = bpy.props.PointerProperty(type=MappSequenceProps)
     bpy.types.Scene.mapp = bpy.props.PointerProperty(type=MappSequenceSceneProps)
 
 def unregister() : 

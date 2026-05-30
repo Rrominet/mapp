@@ -33,13 +33,13 @@ class CameraManager :
         self.updateFrom3DView() 
         
     def updateFrom3DView(self) : 
-        seqs = cam.sequences_all()
+        seqs = cam.strips_all()
         for s in seqs : 
             if s.cm.isCamera : 
                 if s.name in bpy.context.scene.objects and bpy.context.scene.objects[s.name].type == "CAMERA" : 
                     pass #all is good the seq and the cmaera exists
                 else : 
-                    cam.sequences().remove(s)
+                    cam.strips().remove(s)
                     
         for c in cams() : 
             if c.cm.hasStrip : 
@@ -54,26 +54,26 @@ class CameraManager :
         camera = cam.cameraFromStrip(s.name) 
         if not camera : 
             return
-        camera.data.cm.start = s.frame_final_start
-        camera.data.cm.end = s.frame_final_end
+        camera.data.cm.start = s.left_handle
+        camera.data.cm.end = s.right_handle
                 
     @staticmethod
     def linkSelections(view) : 
         if view == "VIEW_3D" : 
             active = bpy.context.view_layer.objects.active
             if active and active.type == "CAMERA" :
-                if active.data.cm.strip in cam.sequences() :
-                    bpy.context.scene.sequence_editor.active_strip = cam.sequences()[active.data.cm.strip]
+                if active.data.cm.strip in cam.strips() :
+                    bpy.context.scene.sequence_editor.active_strip = cam.strips()[active.data.cm.strip]
             for c in cams() : 
-                if c.data.cm.strip in cam.sequences() : 
-                    cam.sequences()[c.data.cm.strip].select = c.select_get()
+                if c.data.cm.strip in cam.strips() : 
+                    cam.strips()[c.data.cm.strip].select = c.select_get()
         
         elif view == "SEQUENCE_EDITOR" : 
             if bpy.context.mode != "OBJECT" : 
                 return
 
             oneSelected = False
-            for seq in bpy.context.scene.sequence_editor.sequences : 
+            for seq in bpy.context.scene.sequence_editor.strips : 
                 if seq.select : 
                     oneSelected = True 
                     break
@@ -86,7 +86,7 @@ class CameraManager :
                 if camera : 
                     bpy.context.view_layer.objects.active = camera
             
-            for strip in cam.sequences() : 
+            for strip in cam.strips() : 
                 if strip.cm.isCamera : 
                     camera = cam.cameraFromStrip(strip.name)
                     if camera : 
@@ -108,7 +108,7 @@ class CameraManager :
         if not seq : 
             return inTime
         else : 
-            for s in cam.sequences() : 
+            for s in cam.strips() : 
                 if s.cm.isCamera : 
                     if s.channel > seq.channel and (CameraManager.isInTime(cam.cameraFromStrip(s.name), currentFrame)) : 
                         return False

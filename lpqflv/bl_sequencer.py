@@ -8,7 +8,7 @@ def availableChannel(frame=-1) :
 
     r_channel = 1
     channels = []
-    for seq in sequences() : 
+    for seq in strips() : 
         if frameIn(seq, frame) :
             channels.append(seq.channel)
         
@@ -17,26 +17,26 @@ def availableChannel(frame=-1) :
         
     return r_channel
 
-# return True if the frame is between frame_final_start and frame_final_end
+# return True if the frame is between left_handle and right_handle
 def frameIn(strip, frame) : 
     if not strip : 
         return False
 
-    return (frame >= strip.frame_final_start) and (frame < strip.frame_final_end)
+    return (frame >= strip.left_handle) and (frame < strip.right_handle)
 
-def sequences() : 
+def strips() : 
     if not bpy.context.scene.sequence_editor : 
         bpy.context.scene.sequence_editor_create()
-    return bpy.context.scene.sequence_editor.sequences
+    return bpy.context.scene.sequence_editor.strips
 
-def sequences_all() : 
+def strips_all() : 
     if not bpy.context.scene.sequence_editor : 
         bpy.context.scene.sequence_editor_create()
-    return bpy.context.scene.sequence_editor.sequences_all
+    return bpy.context.scene.sequence_editor.strips_all
 
-def sequencesFromPath(path, type="MOVIE") : 
+def stripsFromPath(path, type="MOVIE") : 
     seqs = []
-    for seq in sequences_all() : 
+    for seq in strips_all() : 
         if seq.type == type and type == "MOVIE" : 
             if seq.filepath == path or bpy.path.abspath(seq.filepath) == path : 
                 seqs.append(seq)
@@ -50,9 +50,9 @@ def selected(deep=False) :
     selected = []
     seqs = []
     if deep : 
-        seqs = sequences_all()
+        seqs = strips_all()
     else : 
-        seqs = sequences()
+        seqs = strips()
     for seq in seqs : 
         if seq.select : 
             selected.append(seq)
@@ -60,7 +60,7 @@ def selected(deep=False) :
     return selected
 
 def unselectAll() : 
-    for s in sequences() : 
+    for s in strips() : 
         s.select = False
 
 def active() : 
@@ -74,13 +74,13 @@ def setActive(seq) :
     bpy.context.scene.sequence_editor.active_strip = seq
 
 def selectAll() : 
-    for s in sequences() : 
+    for s in strips() : 
         s.select = True
         s.select_left_handle = False
         s.select_right_handle = False
 
 def deselecteAll() : 
-    for s in sequences_all() : 
+    for s in strips_all() : 
         s.select = False
         s.select_left_handle = False
         s.select_right_handle = False
@@ -91,13 +91,13 @@ def erase(path, _in, _out, sound=False) :
     print("out frame : " + str(_out))
     sequencer = bpy.context.scene.sequence_editor
     if not sound : 
-        seq = sequencer.sequences.new_movie(
+        seq = sequencer.strips.new_movie(
                 name=path.split(os.sep)[-1], 
                 filepath = path, 
                 channel=2, 
                 frame_start=bpy.context.scene.frame_current
                 )
-    seq2 = sequencer.sequences.new_sound(
+    seq2 = sequencer.strips.new_sound(
             name=path.split(os.sep)[-1], 
             filepath = path, 
             channel=1, 
@@ -108,35 +108,35 @@ def erase(path, _in, _out, sound=False) :
     else : 
         seqs = (seq2, )
     for s in seqs : 
-        s.frame_offset_start = _in
-        s.frame_offset_end = s.frame_duration - _out
+        s.left_handle_offset = _in
+        s.right_handle_offset = s.content_duration - _out
         s.frame_start = -_in + bpy.context.scene.frame_current
         if s.type == "MOVIE" : 
             ratio = bpy.context.scene.render.resolution_x/s.elements[0].orig_width
             s.transform.scale_x = ratio
             s.transform.scale_y = ratio
 
-    bpy.context.scene.frame_current = seqs[0].frame_final_end
+    bpy.context.scene.frame_current = seqs[0].right_handle
 
 def setStartNEndFromSelectedStripes() : 
     selection = selected()
     if len(selection) == 0 : 
-        selection = sequences()
+        selection = strips()
 
     setStartNEndFromStripes(selection)
 
 def setStartNEndFromStripes(stripes) : 
     if (len(stripes) == 0) : 
         return
-    minFrame = stripes[0].frame_final_start
-    maxFrame = stripes[0].frame_final_end
+    minFrame = stripes[0].left_handle
+    maxFrame = stripes[0].right_handle
 
     for seq in stripes : 
-        if seq.frame_final_start < minFrame : 
-            minFrame = seq.frame_final_start 
+        if seq.left_handle < minFrame : 
+            minFrame = seq.left_handle 
 
-        if seq.frame_final_end > maxFrame : 
-            maxFrame = seq.frame_final_end 
+        if seq.right_handle > maxFrame : 
+            maxFrame = seq.right_handle 
 
     bpy.context.scene.frame_start = minFrame
     bpy.context.scene.frame_end = maxFrame - 1
@@ -152,7 +152,7 @@ def unmute(stripes=[]) :
     mute(stripes, False)
 
 def isUnderTheCursor(strip) : 
-    return (bpy.context.scene.frame_current >= strip.frame_final_start) and (bpy.context.scene.frame_current < strip.frame_final_end)
+    return (bpy.context.scene.frame_current >= strip.left_handle) and (bpy.context.scene.frame_current < strip.right_handle)
 
 def serialized(seq) : 
     data = {}
@@ -161,13 +161,13 @@ def serialized(seq) :
     data["channel"] = seq.channel
     data["color_tag"] = seq.color_tag
     data["effect_fader"] = seq.effect_fader
-    data["frame_duration"] = seq.frame_duration
-    data["frame_final_duration"] = seq.frame_final_duration
-    data["frame_final_end"] = seq.frame_final_end
-    data["frame_final_start"] = seq.frame_final_start
-    data["frame_offset_end"] = seq.frame_offset_end
-    data["frame_offset_start"] = seq.frame_offset_start
-    data["frame_start"] = seq.frame_start
+    data["content_duration"] = seq.content_duration
+    data["duration"] = seq.duration
+    data["right_handle"] = seq.right_handle
+    data["left_handle"] = seq.left_handle
+    data["right_handle_offset"] = seq.right_handle_offset
+    data["left_handle_offset"] = seq.left_handle_offset
+    data["content_start"] = seq.content_start
     data["lock"] = seq.lock
     data["mute"] = seq.mute
     data["name"] = seq.name
@@ -291,11 +291,11 @@ def serializedSoundSequence(seq, data) :
 def deserialized(data) : 
     seq = None
     if data["type"] == "IMAGE" : 
-        seq = bpy.context.scene.sequence_editor.sequences.new_image(data["name"], data["directory"] + os.sep + data["elements"][0]["filename"], data["channel"], int(data["frame_start"]))
+        seq = bpy.context.scene.sequence_editor.strips.new_image(data["name"], data["directory"] + os.sep + data["elements"][0]["filename"], data["channel"], int(data["frame_start"]))
     elif data["type"] == "MOVIE" : 
-        seq = bpy.context.scene.sequence_editor.sequences.new_movie(data["name"], data["filepath"], data["channel"], int(data["frame_start"]))
+        seq = bpy.context.scene.sequence_editor.strips.new_movie(data["name"], data["filepath"], data["channel"], int(data["frame_start"]))
     elif data["type"] == "SOUND" : 
-        seq = bpy.context.scene.sequence_editor.sequences.new_sound(data["name"], data["sound"]["filepath"], data["channel"], int(data["frame_start"]))
+        seq = bpy.context.scene.sequence_editor.strips.new_sound(data["name"], data["sound"]["filepath"], data["channel"], int(data["frame_start"]))
     if seq == None : 
         print ("Sequence type " + data["type"] + " deserialized is not implemented yet.")
         return
@@ -305,25 +305,25 @@ def deserialized(data) :
     seq.color_tag=data["color_tag"]
     seq.effect_fader=data["effect_fader"]
     try : 
-        seq.frame_duration=data["frame_duration"]
+        seq.content_duration=data["content_duration"]
     except : pass
     try : 
-        seq.frame_final_duration=data["frame_final_duration"]
+        seq.duration=data["duration"]
     except : pass
     try : 
-        seq.frame_final_end=data["frame_final_end"]
+        seq.right_handle=data["right_handle"]
     except : pass
     try : 
-        seq.frame_final_start=data["frame_final_start"]
+        seq.left_handle=data["left_handle"]
     except : pass
     try : 
-        seq.frame_offset_end=data["frame_offset_end"]
+        seq.right_handle_offset=data["right_handle_offset"]
     except : pass
     try : 
-        seq.frame_offset_start=data["frame_offset_start"]
+        seq.left_handle_offset=data["left_handle_offset"]
     except : pass
     try : 
-        seq.frame_start=data["frame_start"]
+        seq.content_start=data["content_start"]
     except : pass
     seq.lock=data["lock"]
     seq.mute=data["mute"]

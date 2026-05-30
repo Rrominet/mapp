@@ -96,7 +96,7 @@ bpy.types.Scene.pathToReplace = bpy.props.StringProperty(name="Replace in path")
 bpy.types.Scene.pathFromReplace = bpy.props.StringProperty(name="With")
 
 bpy.types.Scene.existingScenes = bpy.props.EnumProperty(items=cfg.EXISTING_SEQS,
-  name="Existing sequences ")
+  name="Existing strips")
 
 bpy.types.WindowManager.showPath = bpy.props.BoolProperty(name="Path and libs", description="Manage Path and libs conflicts \nbetween scenes in the pipeline.", default=False)
   

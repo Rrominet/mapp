@@ -19,7 +19,6 @@
 import bpy
 import bmesh
 import blf
-import bgl
 import sys
 import os
 import mathutils

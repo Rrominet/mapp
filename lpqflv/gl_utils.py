@@ -17,7 +17,6 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import blf
-import bgl
 import bpy
 import gpu
 import gpu_extras.presets
@@ -71,7 +70,6 @@ class Drawer :
         self.toogleHandler();
 
 class ImageBase : 
-    quality = bgl.GL_LINEAR
     def __init__(self, path, coord=(5, 5), space=None) : 
         self._path = path
         self._coord = [coord[0], coord[1]]
@@ -135,17 +133,10 @@ class _2DImage(ImageBase) :
                     "pos": ((self._coord[0], self._coord[1]), (self._coord[0] + self._w, self._coord[1]), (self._coord[0] + self._w, self._coord[1] + self._h), (self._coord[0], self._coord[1] + self._h)),
                     "texCoord" : ((0, 0), (1, 0), (1 ,1), (0, 1)),
                 })
-            bgl.glEnable(bgl.GL_BLEND)
-            bgl.glActiveTexture(bgl.GL_TEXTURE0)
-            bgl.glBindTexture(bgl.GL_TEXTURE_2D, self._image.bindcode)
-
-            bgl.glTexParameteri(bgl.GL_TEXTURE_2D, bgl.GL_TEXTURE_MIN_FILTER, ImageBase.quality)
-            bgl.glTexParameteri(bgl.GL_TEXTURE_2D, bgl.GL_TEXTURE_MAG_FILTER, ImageBase.quality)
 
             self._shader.bind()
             self._shader.uniform_int("image", 0);
             self._batch.draw(self._shader)
-            bgl.glDisable(bgl.GL_BLEND)
         self._drawer = Drawer(handler, (), self._space)
         self._drawer.start()
 
@@ -183,16 +174,10 @@ class _3DImage(ImageBase) :
             self._batch = gpu_extras.batch.batch_for_shader(
                 self._shader, "TRI_FAN", data
                 )
-            bgl.glEnable(bgl.GL_DEPTH_TEST)
-            bgl.glEnable(bgl.GL_BLEND)
-            bgl.glActiveTexture(bgl.GL_TEXTURE0)
-            bgl.glBindTexture(bgl.GL_TEXTURE_2D, self._image.bindcode)
 
             self._shader.bind()
             self._shader.uniform_int("image", 0);
             self._batch.draw(self._shader)
-            bgl.glDisable(bgl.GL_BLEND)
-            bgl.glDisable(bgl.GL_DEPTH_TEST)
         self._drawer = Drawer(handler, (), self._space, Drawer._3D)
         self._drawer.start()
 
