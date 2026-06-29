@@ -1,11 +1,29 @@
 import bpy
 
+def getFcurves(action) : 
+    if len(action.layers) == 0 :
+        print ("no layer")
+        return None
+    if len(action.layers[0].strips) == 0 :
+        print("no strip")
+        return None
+    if len(action.layers[0].strips[0].channelbags) == 0 :
+        print ("no channelbag")
+        return None
+    fcurves = action.layers[0].strips[0].channelbags[0].fcurves
+    if not fcurves :
+        print("no fcurves")
+        return None
+    return fcurves
+
 def keyframes(object, dataPath) : 
     if not object.animation_data :
         return None
     if not object.animation_data.action : 
         return None
-    fcurves = object.animation_data.action.fcurves
+    fcurves = getFcurves(object.animation_data.action)
+    if not fcurves : 
+        return None
     fcurve = fcurves.find(dataPath)
     if not fcurve : 
         return None
@@ -18,7 +36,10 @@ def addKeyframe(object, dataPath, value, frame) :
             object.animation_data_create()
         if not object.animation_data.action : 
             object.animation_data.action = bpy.data.actions.new(object.name + "Action")
-        fcurves = object.animation_data.action.fcurves
+        fcurves = getFcurves(object.animation_data.action)
+        if not fcurves : 
+            object.animation_data.action.fcurve_ensure_for_datablock(object, dataPath)
+            fcurves = getFcurves(object.animation_data.action)
         fcurve = fcurves.find(dataPath)
         if not fcurve : 
             fcurve = fcurves.new(data_path=dataPath)
@@ -41,7 +62,7 @@ def updateFcurves(objects) :
             continue
         if not o.animation_data.action : 
             continue
-        for fcurve in o.animation_data.action.fcurves : 
+        for fcurve in getFcurves(o.animation_data.action) : 
             fcurve.update()
 
 def selectedKeyframes(o) : 
@@ -54,7 +75,7 @@ def selectedKeyframes(o) :
 
     kfs = []
 
-    for fcurve in action.fcurves : 
+    for fcurve in getFcurves(action) : 
         for kf in fcurve.keyframe_points : 
             if kf.select_control_point : 
                 kfs.append(kf)
@@ -74,7 +95,7 @@ def fcurvesFromBone(object, boneName) :
     if not object.animation_data.action :
         return fcurves
 
-    for c in object.animation_data.action.fcurves : 
+    for c in getFcurves(object.animation_data) : 
         dataName = c.data_path.split("\"")
         try : 
             dataName = dataName[1]
