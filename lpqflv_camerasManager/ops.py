@@ -717,12 +717,22 @@ class PIPE_SaveIncrement(bpy.types.Operator):
     
     @classmethod
     def poll(self, context) : 
-        if context.scene.sceneContent == "" : 
-            return False
         return True
 
     def execute(self, context):
-        pipeline = p.Pipeline(bpy.context.scene.projectPath, bpy.context.scene.sceneContent, bpy.context.scene.sceneType, bpy.context.scene.charType, bpy.context.scene.seq)
+        if (context.scene.projectPath == "") : 
+            self.report({'ERROR'}, "Your project path is empty.")
+            return {'CANCELLED'}
+        if not os.path.isdir(context.scene.projectPath) :
+            self.report({'ERROR'}, "Your project path doesn't exist.")
+            return {'CANCELLED'}
+
+        sccontent = p.currentSceneContent()
+        if (sccontent == "") : 
+            self.report({'ERROR'}, "Your scene content is empty.")
+            return {'CANCELLED'}
+
+        pipeline = p.Pipeline(bpy.context.scene.projectPath, sccontent, bpy.context.scene.sceneType, bpy.context.scene.charType, bpy.context.scene.seq)
         scenePath = pipeline.saveIncrementScene()
         
         self.report({'INFO'}, "File Saved : " + scenePath)
@@ -749,12 +759,22 @@ class PIPE_SaveMaster(bpy.types.Operator):
 
     @classmethod
     def poll(self, context) : 
-        if context.scene.sceneContent == "" : 
-            return False
         return True    
 
     def execute(self, context):
-        pipeline = p.Pipeline(bpy.context.scene.projectPath, bpy.context.scene.sceneContent, bpy.context.scene.sceneType, bpy.context.scene.charType, bpy.context.scene.seq)
+        if (context.scene.projectPath == "") : 
+            self.report({'ERROR'}, "Your project path is empty.")
+            return {'CANCELLED'}
+        if not os.path.isdir(context.scene.projectPath) :
+            self.report({'ERROR'}, "Your project path doesn't exist.")
+            return {'CANCELLED'}
+
+        sccontent = p.currentSceneContent()
+        if (sccontent == "") : 
+            self.report({'ERROR'}, "Your scene content is empty.")
+            return {'CANCELLED'}
+
+        pipeline = p.Pipeline(bpy.context.scene.projectPath, sccontent, bpy.context.scene.sceneType, bpy.context.scene.charType, bpy.context.scene.seq)
         scenePath = pipeline.saveMasterScene()
         
         self.report({'INFO'}, "Master file Saved : " + scenePath)

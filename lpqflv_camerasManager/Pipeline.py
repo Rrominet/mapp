@@ -23,6 +23,7 @@ import bpy
 import os 
 import shutil
 import sys
+from lpqflv import fileTools as ft
 
 class Pipeline : 
     def __init__(self, projectPath="", sceneContent="", sceneType="", characterType="modeling", seq = 0) : 
@@ -380,3 +381,26 @@ def trash() :
         os.mkdir(_trash)
         
     return _trash
+
+def currentSceneContent() : 
+    if bpy.context.scene.sceneContent != "" : 
+        return bpy.context.scene.sceneContent
+    bname = ft.baseName(bpy.data.filepath)
+    tmp = bname.split("_")
+    bname = ""
+    if len(tmp) == 1 : 
+        bname = tmp[0]
+    else : 
+        for i in range(1, len(tmp)) : 
+            bname += tmp[i] + "_"
+        bname = bname[:-1]
+    tmp = bname.split(".")
+    name_ok = ""
+
+    if len(tmp) == 1 : 
+        name_ok = tmp[0]
+    else : 
+        for i in range(0, len(tmp) - 1) : 
+            name_ok += tmp[i] + "."
+        name_ok = name_ok[:-1]
+    return name_ok

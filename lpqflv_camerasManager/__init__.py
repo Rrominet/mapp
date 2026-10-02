@@ -20,7 +20,7 @@
 bl_info = {
     "name": "MAPP : Pipeline and Cameras Manager",
     "author": "Romain Gilliot",
-    "version": (7, 5, 3),
+    "version": (7, 5, 5),
     "blender" : (4, 0, 1),
     "location": "Pipeline Editor, Property Editor, VSE",
     "description": "Manage your project with an advanced Pipeline Tool.",
@@ -75,7 +75,6 @@ from lpqflv_camerasManager.vse import ops as vse_ops
 from lpqflv_camerasManager.vse import menus as vse_menus
 from lpqflv_camerasManager.vse import panels as vse_panels
     
-        
 
 ## properties 
 

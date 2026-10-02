@@ -242,14 +242,14 @@ class FileOutput :
         self.filepath = filepath
 
     def node(self, sc) : 
-        return sc.node_tree.nodes[self.name]
+        return sc.compositing_node_group.nodes[self.name]
 
     @staticmethod
     def all(sc) : 
         fileOutputs = []
-        if not sc.node_tree :
+        if not sc.compositing_node_group :
             return fileOutputs
-        for n in sc.node_tree.nodes : 
+        for n in sc.compositing_node_group.nodes : 
             if n.bl_idname == "CompositorNodeOutputFile" : 
                 fo = FileOutput (n.name, n.base_path)
                 fileOutputs.append(fo)
