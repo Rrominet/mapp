@@ -1292,7 +1292,7 @@ class MCR_MkPreview (bpy.types.Operator) :
             return {"CANCELLED"}
 
 
-        o_file_format = context.scene.render.image_settings.file_format
+        o_media_type = context.scene.render.image_settings.media_type
         o_color_mode = context.scene.render.image_settings.color_mode
         o_color_depth = context.scene.render.image_settings.color_depth
         o_ffmpeg_preset = context.scene.render.ffmpeg.ffmpeg_preset
@@ -1307,7 +1307,7 @@ class MCR_MkPreview (bpy.types.Operator) :
         use_preview_range = context.scene.use_preview_range
 
         context.scene.use_preview_range = False
-        context.scene.render.image_settings.file_format = 'FFMPEG'
+        context.scene.render.image_settings.media_type = 'VIDEO'
         context.scene.render.ffmpeg.constant_rate_factor = 'MEDIUM'
         context.scene.render.ffmpeg.ffmpeg_preset = 'GOOD'
         context.scene.render.ffmpeg.gopsize = 1
@@ -1340,14 +1340,13 @@ class MCR_MkPreview (bpy.types.Operator) :
         context.scene.render.filepath = filePath
         context.area.type = prevType
 
-        context.scene.render.image_settings.file_format = o_file_format
+        context.scene.render.image_settings.media_type = o_media_type
         context.scene.render.image_settings.color_mode = o_color_mode
         context.scene.render.image_settings.color_depth = o_color_depth
 
         context.scene.render.ffmpeg.constant_rate_factor = o_constant_rate_factor
         context.scene.render.ffmpeg.ffmpeg_preset = o_ffmpeg_preset
         context.scene.render.ffmpeg.gopsize = o_gopsize
-        context.scene.render.image_settings.file_format = o_file_format
 
         context.scene.render.ffmpeg.format = o_format
         context.scene.render.ffmpeg.codec = o_codec

@@ -32,7 +32,7 @@ class VSE_CreateShot(bl_ops.Operator) :
 
     @classmethod
     def create(cls, name) : 
-        strip = bs.strips().new_effect(name, "TEXT", bs.availableChannel(), bpy.context.scene.frame_current, frame_end=bpy.context.scene.frame_current + 24)
+        strip = bs.strips().new_effect(name, "TEXT", bs.availableChannel(), bpy.context.scene.frame_current, length=24)
         strip.text = name
         VSE_TransformToShot.transform(strip)
 
@@ -142,7 +142,7 @@ class VSE_CreateSeq(bl_ops.Operator) :
             if s.channel > ch : 
                 ch = s.channel
 
-        strip = bs.strips().new_effect(name, "TEXT", ch+1, fs, frame_end=fe)
+        strip = bs.strips().new_effect(name, "TEXT", ch+1, fs, length=fe-fs)
         strip.text = name
         VSE_TransformToSeq.transform(strip)
 
@@ -364,7 +364,7 @@ class VSE_AddReviewToShot(bl_ops.Operator) :
             if s.channel > ch : 
                 ch = s.channel
 
-        strip = bs.strips().new_effect(self.review, "TEXT", ch+1, fs, frame_end=fe)
+        strip = bs.strips().new_effect(self.review, "TEXT", ch+1, fs, length=20)
         strip.text = self.review
         strip.color[0] = 1
         strip.color[1] = 0
