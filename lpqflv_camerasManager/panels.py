@@ -569,6 +569,17 @@ def drawAutoRenderOutputButton (self, context) :
     l = self.layout
     r = l.row()
     l.operator(ops.PIPE_SetRenderOutput.bl_idname)
+
+def drawDefaultResolution(self, context): 
+    l = self.layout
+    l.separator()
+    l.prop(context.scene.mcr_default_resolution, "use")
+    if context.scene.mcr_default_resolution.use : 
+        col = l.column(align=True)
+        col.prop(context.scene.mcr_default_resolution, "resolution")
+        col.prop(context.scene.mcr_default_resolution, "pourcentage")
+        col.separator()
+        col.operator(ops.MCR_SetResolutionFromDefaultResolution.bl_idname)
          
 class MCR_PanelProps(bpy.types.PropertyGroup) : 
     showTime : bpy.props.BoolProperty(default=False)
@@ -590,6 +601,7 @@ def register () :
     bpy.utils.register_class(MCR_MultiCamRenderPanelOK)
     bpy.utils.register_class(MCR_CameraSettingsPanel)
     bpy.types.RENDER_PT_output.append(drawAutoRenderOutputButton)
+    bpy.types.RENDER_PT_format.append(drawDefaultResolution)
     
 def unregister () : 
     bpy.utils.unregister_class(FileTreeProps)

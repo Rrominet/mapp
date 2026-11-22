@@ -116,7 +116,7 @@ class CameraManagerSeqProps(bpy.types.PropertyGroup) :
 
 class Resolution(bpy.types.PropertyGroup) :
     res : bpy.props.IntVectorProperty(name="Resolution", default=(0, 0), size=2, options={"LIBRARY_EDITABLE"})
-    resPercentage : bpy.props.IntProperty(name="%", default=100, options={"LIBRARY_EDITABLE"}, min=0, max=100, subtype="PERCENTAGE")
+    resPercentage : bpy.props.IntProperty(name="%", default=100, options={"LIBRARY_EDITABLE"}, min=0, subtype="PERCENTAGE", soft_max=100)
 
 class Samples(bpy.types.PropertyGroup) :
     use_adaptive_threshold : bpy.props.BoolProperty(name="Use Adaptive Threshold", default=True, options={"LIBRARY_EDITABLE"})
@@ -157,6 +157,8 @@ def onOverrideResolutionChange (self, ctx) :
     self.res.res[0] = ctx.scene.render.resolution_x
     self.res.res[1] = ctx.scene.render.resolution_y
     self.res.resPercentage = ctx.scene.render.resolution_percentage
+    if not ctx.scene.mcr_default_resolution.use : 
+        ctx.scene.mcr_default_resolution.use = True
 
 def onOverrideSamplesChange (self, ctx) :
     self.samples.use_adaptive_threshold = ctx.scene.cycles.use_adaptive_sampling

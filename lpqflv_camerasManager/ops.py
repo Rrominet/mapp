@@ -43,7 +43,7 @@ import bpy
 class MkActiveCamera (bpy.types.Operator) : 
     """Make this Camera the active One"""
     
-    bl_idname = "lpqflv_camera_manager.mk_active_camera"
+    bl_idname = "mcr.mk_active_camera"
     bl_label = "Active strip as active Camera"
     
     cameraName : bpy.props.StringProperty()
@@ -55,7 +55,7 @@ class MkActiveCamera (bpy.types.Operator) :
 class SelectCamera (bpy.types.Operator) : 
     """Select the Camera"""
     
-    bl_idname = "lpqflv_camera_manager.select_camera"
+    bl_idname = "mcr.select_camera"
     bl_label = ""
     
     cameraName : bpy.props.StringProperty()
@@ -67,7 +67,7 @@ class SelectCamera (bpy.types.Operator) :
         return {'FINISHED'}
 
 class CameraFramesAsRange (bpy.types.Operator) : 
-    bl_idname = "lpqflv_camera_manager.frames_as_range"
+    bl_idname = "mcr.frames_as_range"
     bl_label = ""
     bl_description = "Set the timeline range of this scene from this camera"
     
@@ -84,7 +84,7 @@ class CameraFramesAsRange (bpy.types.Operator) :
 class SelectAllCameras (bpy.types.Operator) : 
     """Select all cameras"""
 
-    bl_idname = "lpqflv_camera_manager.select_all_cameras"
+    bl_idname = "mcr.select_all_cameras"
     bl_label = "Select All"
     
     def execute(self, context) : 
@@ -1687,6 +1687,17 @@ class MCR_SetResolutionFromActiveCamera(bl_ops.Operator) :
         context.scene.render.resolution_percentage = res.resPercentage
         return {'FINISHED'}
 
+class MCR_SetResolutionFromDefaultResolution(bl_ops.Operator) :
+    bl_idname = "mcr.set_resolution_from_default_resolution"
+    bl_label = "Set Scene Resolution"
+    bl_description = "Set scene resolution default resolution"
+    
+    def execute(self, context) : 
+        context.scene.render.resolution_x = context.scene.mcr_default_resolution.resolution[0]
+        context.scene.render.resolution_y = context.scene.mcr_default_resolution.resolution[1]
+        context.scene.render.resolution_percentage = context.scene.mcr_default_resolution.pourcentage
+        return {'FINISHED'}
+
 def register () : 
     bpy.utils.register_class(MkActiveCamera)
     bpy.utils.register_class(SelectCamera)
@@ -1745,6 +1756,7 @@ def register () :
     bpy.utils.register_class(MCR_ManageCamSE)
     bpy.utils.register_class(MCR_OffsetCams)
     bpy.utils.register_class(MCR_SetResolutionFromActiveCamera)
+    bpy.utils.register_class(MCR_SetResolutionFromDefaultResolution)
 
     bpy.utils.register_class(PIPE_DuplicateCurrentScene)
 
@@ -1815,3 +1827,4 @@ def unregister () :
     bpy.utils.unregister_class(MCR_OffsetCams)
 
     bpy.utils.unregister_class(MCR_SetResolutionFromActiveCamera)
+    bpy.utils.unregister_class(MCR_SetResolutionFromDefaultResolution)

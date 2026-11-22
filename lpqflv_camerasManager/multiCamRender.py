@@ -18,11 +18,11 @@ class MultiCamRender :
         self.all = []
         self.doned = []
         self.activeCamera = ""
-        self.renderSettings = RenderSetings()
+        self.renderSettings = RenderSettings()
         self.status = MultiCamRender.FINISHED
         self.renderFarm = rf.RenderFarm()
 
-    #TODO the disableMotionBlur don't work for now because it can't be included in the current systen (render in animation, need to render frame by frame)
+    #TODO the disableMotionBlur don't work for now because it can't be included in the current system (render in animation, need to render frame by frame)
     def preRender(self) : 
         self.renderSettings.get(bpy.context.scene)
         for c in cm.cams() : 
@@ -178,7 +178,7 @@ class MultiCamRender :
     def specificFramestoInt (framesList) : 
         return list(map(int, framesList))
 
-class RenderSetings : 
+class RenderSettings : 
     def __init__(self) : 
         self.filepath = ""
         self.frame_start = 0
@@ -205,8 +205,13 @@ class RenderSetings :
             self.activeBgScene = sc.background_set.name
 
         self.fileOutputs = FileOutput.all(sc)
-        self.resolution = [sc.render.resolution_x, sc.render.resolution_y]
-        self.resolutionPercentage = sc.render.resolution_percentage
+        if sc.mcr_default_resolution.use : 
+            self.resolution = sc.mcr_default_resolution.resolution
+            self.resolutionPercentage = sc.mcr_default_resolution.pourcentage
+        else : 
+            self.resolution = [sc.render.resolution_x, sc.render.resolution_y]
+            self.resolutionPercentage = sc.render.resolution_percentage
+
         self.use_adaptive_threshold = sc.cycles.use_adaptive_sampling
         self.adaptive_threshold = sc.cycles.adaptive_threshold
         if sc.cm.useSampleOverride :
@@ -293,6 +298,19 @@ def onRenderCamerasUpdate(self, context) :
             if not se.isRendered or (se.isRendered and context.window_manager.mcr_seeRendered) : 
                 se.render = self.mcr_toggleRenderCameras
 
+def DefaultRenderResolution_onUse(self, context) : 
+    if self.use : 
+        if self.resolution[0] == -1 : 
+            self.resolution[0] = context.scene.render.resolution_x
+            self.resolution[1] = context.scene.render.resolution_y
+            self.pourcentage = context.scene.render.resolution_percentage
+
+class DefaultRenderResolution(bpy.types.PropertyGroup): 
+    use : bpy.props.BoolProperty(name="Use Default Resolution", description="Use this when you have camera overriding the render resolution (should be setted automatically)", update=DefaultRenderResolution_onUse)
+
+    resolution : bpy.props.IntVectorProperty(name="Resolution (px)", description="The resolution used when the resolution is not overriden by the active camera.", min=-1, size=2, subtype="XYZ", default=[-1, -1])
+    pourcentage : bpy.props.IntProperty(name="%", default=100, min=0, subtype="PERCENTAGE", soft_max=100)
+
 def register() : 
     cfg.MCR = MultiCamRender()
     bpy.types.WindowManager.secondsPerFrame = bpy.props.IntProperty(name="Seconds Per Frame", min=0)
@@ -315,6 +333,9 @@ def register() :
     bpy.types.WindowManager.mcr_toggleRenderCameras = bpy.props.BoolProperty(name="Render cameras", description="Desactivate/activate render propertie for each cameras", update=onRenderCamerasUpdate)
     bpy.types.WindowManager.mcr_seeRendered = bpy.props.BoolProperty(name="Rendered", default=False)
     bpy.types.Scene.mcr_outputDir = bpy.props.StringProperty(name="AE Path", subtype='DIR_PATH')
+
+    bpy.utils.register_class(DefaultRenderResolution)
+    bpy.types.Scene.mcr_default_resolution = bpy.props.PointerProperty(type=DefaultRenderResolution)
 
 def unregister() : 
     pass

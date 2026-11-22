@@ -97,6 +97,12 @@ class CameraManager :
         for camera in cams() : 
             if CameraManager.isActive(camera, scene.frame_current) : 
                 scene.camera = camera
+                if camera.data.cm.overrideResolution : 
+                    scene.render.resolution_x = camera.data.cm.res.res[0]
+                    scene.render.resolution_y = camera.data.cm.res.res[1]
+                elif scene.mcr_default_resolution.use : 
+                    scene.render.resolution_x = scene.mcr_default_resolution.resolution[0]
+                    scene.render.resolution_y = scene.mcr_default_resolution.resolution[1]
                 return
 
     @staticmethod
