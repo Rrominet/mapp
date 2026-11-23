@@ -186,6 +186,8 @@ class CameraManagerCamProps(bpy.types.PropertyGroup) :
     bpy.utils.register_class(Samples)
     samples: bpy.props.PointerProperty(type=Samples)
     scene : bpy.props.StringProperty(name="Background Scene", options={"LIBRARY_EDITABLE"})
+    excluded_collections : bpy.props.StringProperty(name="Excluded Collections", description="Excluded Collections separated by ','")
+    excluded_objects : bpy.props.StringProperty(name="Excluded Objects", description="Excluded Objects separated by ','")
 
 class CameraManagerObjectProps(bpy.types.PropertyGroup) : 
     hasStrip : bpy.props.BoolProperty(name="Has a Strip", description="Has a Strip to manage the start and the end frame", update=onHasStripChange)

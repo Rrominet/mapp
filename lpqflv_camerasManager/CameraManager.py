@@ -23,11 +23,41 @@ from . import config as cfg
 
 import bpy 
 from bpy.app.handlers import persistent
+from lpqflv import bl_events
+
+def exclude_filter(el) : 
+    return el != ""
 
 class CameraManager : 
     def __init__(self) : 
         self.seqCameras = [] 
         self.running = False
+
+    @staticmethod
+    def resetExcluded() :
+        col_excluded = []
+        objects_excluded = []
+
+        for c in cams() : 
+            excluded = c.data.cm.excluded_collections.split(",")
+            excluded = list(filter(exclude_filter, excluded))
+            for e in excluded : 
+                if e not in col_excluded : 
+                    col_excluded.append(e)
+
+            excluded = c.data.cm.excluded_objects.split(",")
+            excluded = list(filter(exclude_filter, excluded))
+            for e in excluded : 
+                if e not in objects_excluded : 
+                    objects_excluded.append(e)
+
+        for c in col_excluded : 
+            bpy.data.collections[c].hide_render = False
+            bpy.data.collections[c].hide_viewport = False
+
+        for c in objects_excluded : 
+            bpy.data.objects[c].hide_render = False
+            bpy.data.objects[c].hide_viewport = False
         
     def updateSeqCameras(self) : 
         self.updateFrom3DView() 
@@ -93,9 +123,12 @@ class CameraManager :
                         camera.select_set(strip.select)
     
     @staticmethod
-    def updateActiveCam (scene) : 
+    def updateActiveCam (scene, force=False) : 
         for camera in cams() : 
             if CameraManager.isActive(camera, scene.frame_current) : 
+                if scene.camera == camera and not force: 
+                    return
+
                 scene.camera = camera
                 if camera.data.cm.overrideResolution : 
                     scene.render.resolution_x = camera.data.cm.res.res[0]
@@ -103,7 +136,32 @@ class CameraManager :
                 elif scene.mcr_default_resolution.use : 
                     scene.render.resolution_x = scene.mcr_default_resolution.resolution[0]
                     scene.render.resolution_y = scene.mcr_default_resolution.resolution[1]
+
+                CameraManager.resetExcluded()
+                if scene.includeExcludedInAutoUpdate : 
+                    CameraManager.exclude_collections(camera)
+                    CameraManager.exclude_objects(camera)
                 return
+
+    @staticmethod
+    def exclude(cam, ls, type) : 
+        excluded = ls.split(",")
+        excluded = list(filter(exclude_filter, excluded))
+        for n in excluded : 
+            try : 
+                bl_ls = getattr(bpy.data, type)
+                bl_ls[n].hide_viewport = True
+                bl_ls[n].hide_render = True
+            except : 
+                pass
+
+    @staticmethod
+    def exclude_objects(cam) : 
+        CameraManager.exclude(cam, cam.data.cm.excluded_objects, "objects")
+
+    @staticmethod
+    def exclude_collections(cam) : 
+        CameraManager.exclude(cam, cam.data.cm.excluded_collections, "collections")
 
     @staticmethod
     def isActive(camera, currentFrame) : 
@@ -131,16 +189,22 @@ class CameraManager :
 
     @staticmethod
     def onAutoCameraChangeUpdate(self, context) : 
-        wm = context.window_manager
         if self.isAutoUpdateCam == True : 
-            if CameraManager.updateActiveCam not in bpy.app.handlers.frame_change_pre :
-                bpy.app.handlers.frame_change_pre.append(CameraManager.updateActiveCam)
+            bl_events.add(CameraManager.updateActiveCam, bl_events.FRAME_CHANGE_PRE)
+            CameraManager.updateActiveCam(context.scene, True)
         else : 
-            if CameraManager.updateActiveCam in bpy.app.handlers.frame_change_pre :
-                bpy.app.handlers.frame_change_pre.remove(CameraManager.updateActiveCam)
+            bl_events.remove(CameraManager.updateActiveCam, bl_events.FRAME_CHANGE_PRE)
+            CameraManager.resetExcluded()
+
+    @staticmethod
+    def onAutoExcludedUpdate(self, context) : 
+        if not self.includeExcludedInAutoUpdate : 
+            CameraManager.resetExcluded()
+        else : 
+            CameraManager.updateActiveCam(context.scene, True)
         
     @persistent
-    def startCameraLink(scene) : 
+    def startCameraLink(dum=None) : 
         if not hasStrips() : 
             return
         if not bpy.context.scene.sequence_editor : 
@@ -149,21 +213,25 @@ class CameraManager :
         cfg.CM.updateFrom3DView()
         if not cfg.CM.running : 
             bpy.ops.lpqfl.modal_camera_events_handler('INVOKE_DEFAULT')
-            
+
+    @persistent
+    def updateAutoOnFileLoad(dum=None) : 
+        sc = bpy.context.scene
+        if sc.isAutoUpdateCam : 
+            CameraManager.updateActiveCam(sc, True)
+            bl_events.add(CameraManager.updateActiveCam, bl_events.FRAME_CHANGE_PRE)
+
     def register(self) : 
-        if CameraManager.startCameraLink not in bpy.app.handlers.load_post : 
-            bpy.app.handlers.load_post.append(CameraManager.startCameraLink)
+        bl_events.add(CameraManager.startCameraLink, bl_events.LOAD)
+        bl_events.add(CameraManager.updateAutoOnFileLoad, bl_events.LOAD)
     
     def unregister(self) : 
         if self.running : 
             self.running = False
             
-        if CameraManager.startCameraLink in bpy.app.handlers.load_post : 
-            bpy.app.handlers.load_post.remove(CameraManager.startCameraLink)
-            
-        if CameraManager.updateActiveCam in bpy.app.handlers.frame_change_pre : 
-            bpy.app.handlers.frame_change_pre.remove(CameraManager.updateActiveCam)
-
+        bl_events.remove(CameraManager.startCameraLink, bl_events.LOAD)
+        bl_events.remove(CameraManager.updateAutoOnFileLoad, bl_events.LOAD)
+        bl_events.remove(CameraManager.updateActiveCam, bl_events.FRAME_CHANGE_PRE)
 
 def cams() : 
     cams = []

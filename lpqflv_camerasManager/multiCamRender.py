@@ -39,7 +39,7 @@ class MultiCamRender :
         return False
 
     def startRender(self, modal=True) : 
-        bpy.context.window_manager.isAutoUpdateCam = False
+        bpy.context.scene.isAutoUpdateCam = False
         self.preRender()
         if len(self.toRender) == 0 :
             self.status = MultiCamRender.FINISHED
@@ -72,6 +72,7 @@ class MultiCamRender :
             bpy.context.scene.cycles.use_animated_seed = cm.samples.use_seed
         
     def render(self, data, modal=True)  : 
+        cm.CameraManager.resetExcluded()
         self.overrideSettings(data)
         c = bpy.data.objects[data["name"]].data
         sc = bpy.context.scene
@@ -79,6 +80,8 @@ class MultiCamRender :
         sc.frame_end = data["end"]
         sc.frame_step = data["step"]
         sc.camera = bpy.data.objects[data["name"]]
+        cm.CameraManager.exclude_collections(sc.camera)
+        cm.CameraManager.exclude_objects(sc.camera)
         if (data["scene"] != "" and data["scene"] != sc.name) : 
             sc.background_set = bpy.data.scenes[data["scene"]]
 

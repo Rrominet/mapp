@@ -1254,7 +1254,7 @@ class MCR_MkRender (bl_ops.Operator) :
     def overInvoke(self, ctx, e) : 
         if cfg.MCR.hasSpecific() : 
             cfg.MCR.preRender()
-            ctx.window_manager.isAutoUpdateCam = False
+            ctx.scene.isAutoUpdateCam = False
             for c in cfg.MCR.toRender : 
                 cfg.MCR.render(c, False)
 
@@ -1284,7 +1284,7 @@ class MCR_MkPreview (bpy.types.Operator) :
     bl_label = "Make PlayBlast with Multi Cameras"
     
     def execute(self, context) : 
-        context.window_manager.isAutoUpdateCam = False
+        context.scene.isAutoUpdateCam = False
         filePath = context.window_manager.previewFilepath
         sceneName = bpy.data.filepath.split("/")[-1].replace(".blend", "")
         if filePath == "" :  
@@ -1698,6 +1698,65 @@ class MCR_SetResolutionFromDefaultResolution(bl_ops.Operator) :
         context.scene.render.resolution_percentage = context.scene.mcr_default_resolution.pourcentage
         return {'FINISHED'}
 
+class RemoveAddExcludedBase : 
+    name : bpy.props.StringProperty(name="Name")
+    type : bpy.props.EnumProperty(items=bl_ui.items("Collection", "Object"))
+    camera : bpy.props.StringProperty(name="Camera")
+    use_selection : bpy.props.BoolProperty(name="Use Selection", default=True)
+
+class AddExcluded(bl_ops.Operator, RemoveAddExcludedBase) :
+    bl_idname = "mcr.add_excluded"
+    bl_label = "Add as Excluded"
+    bl_description = "Mark an object or collection as excluded from a camera"
+
+    def add(self, name, cam): 
+        if self.type == "Collection": 
+            if name in cam.data.cm.excluded_collections : 
+                return
+            cam.data.cm.excluded_collections +=name + ","
+        elif self.type == "Object" : 
+            if bpy.data.objects[name].type == "CAMERA" : 
+                return
+            if name in cam.data.cm.excluded_objects : 
+                return
+            cam.data.cm.excluded_objects +=name + ","
+
+    def execute(self, context) : 
+        context.area.tag_redraw()
+        cam = bpy.data.objects[self.camera]
+        if self.use_selection and self.type == "Object" : 
+            for o in context.selected_objects : 
+                self.add(o.name, cam)
+        else: 
+            self.add(self.name, cam)
+
+        return {'FINISHED'}
+
+    def draw(self, context): 
+        l = self.layout
+        if self.type == "Object": 
+            l.prop(self, "use_selection")
+        if not self.use_selection or self.type != "Object" : 
+            if self.type == "Collection": 
+                l.prop_search(self, "name", bpy.data, "collections")
+            elif self.type == "Object" : 
+                l.prop_search(self, "name", bpy.data, "objects")
+
+class RemoveExcluded(bl_ops.Operator, RemoveAddExcludedBase) :
+    bl_idname = "mcr.remove_excluded"
+    bl_label = "Remove Excluded"
+    bl_description = "Unmark an object or collection as excluded from a camera"
+    
+    def execute(self, context) : 
+        context.area.tag_redraw()
+        cam = bpy.data.objects[self.camera]
+
+        if self.type == "Collection": 
+            cam.data.cm.excluded_collections = cam.data.cm.excluded_collections.replace(self.name +",", "")
+        elif self.type == "Object" : 
+            cam.data.cm.excluded_objects = cam.data.cm.excluded_objects.replace(self.name +",", "")
+        return {'FINISHED'}
+
 def register () : 
     bpy.utils.register_class(MkActiveCamera)
     bpy.utils.register_class(SelectCamera)
@@ -1759,6 +1818,8 @@ def register () :
     bpy.utils.register_class(MCR_SetResolutionFromDefaultResolution)
 
     bpy.utils.register_class(PIPE_DuplicateCurrentScene)
+    bpy.utils.register_class(AddExcluded)
+    bpy.utils.register_class(RemoveExcluded)
 
     def updatePipelinePaths() : 
         bpy.ops.pipeline.update()
@@ -1828,3 +1889,6 @@ def unregister () :
 
     bpy.utils.unregister_class(MCR_SetResolutionFromActiveCamera)
     bpy.utils.unregister_class(MCR_SetResolutionFromDefaultResolution)
+
+    bpy.utils.unregister_class(AddExcluded)
+    bpy.utils.unregister_class(RemoveExcluded)

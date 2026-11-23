@@ -43,11 +43,15 @@ class CamerasToolPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        r = layout.row()
+        r = layout.row(align=True)
         r.alignment = "EXPAND"
         r.prop(context.scene.cm, "search", icon="VIEWZOOM")
+        r.separator()
         r.prop(context.scene.cm, "local", icon="SCENE_DATA", text="")
-        r.prop(context.window_manager, "isAutoUpdateCam", icon="PLAY", text="")
+        r.separator()
+        r.prop(context.scene, "isAutoUpdateCam", icon="PLAY", text="")
+        if context.scene.isAutoUpdateCam : 
+            r.prop(context.scene, "includeExcludedInAutoUpdate", icon="GHOST_DISABLED", text="")
         for cam in cm.cams() : 
             if context.scene.cm.search == "" or context.scene.cm.search.lower() in cam.name.lower() : 
                 self.drawCam(context, cam)
@@ -497,6 +501,58 @@ class MCR_MultiCamRenderPanelOK(bpy.types.Panel):
             r.label(text = cam.name, icon="CAMERA_DATA")
             r.label(text=str(cam.start) + " - " + str(cam.end), icon="MOD_TIME")
 
+class MCR_PipelinePropsPanel(bpy.types.Panel):
+    bl_label = "Pipeline Scene Settings"
+    bl_idname = "LPQFLV_PT_Pipeline_props"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "scene"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        l = self.layout
+        c = l.column(align=True)
+        c.label(text="These should be setted automatically", icon="ERROR")
+        c.label(text="Only update these if there is errors...")
+        c.separator()
+
+        sc = context.scene
+        c.prop(sc, "projectPath")
+        c.prop(sc, "sceneContent")
+        c.prop(sc, "sceneType")
+
+        if sc.sceneType == "animations" or sc.sceneType == "render-settings" or sc.sceneType == "lighting-shading" : 
+            c.prop(sc, "seq")
+        elif sc.sceneType == "characters" :
+            c.prop(sc, "charType")
+
+def exclude_filter(el) : 
+    return el != ""
+
+def draw_excluded(layout, ls, camname, type) : 
+    excluded = ls.split(",")
+    excluded = list(filter(exclude_filter, excluded))
+    lbl = "Excluded Collections :"
+    icon = "COLLECTION_COLOR_01"
+    if type == "Object" : 
+        lbl = "Excluded Objects :"
+        icon = "OBJECT_DATA"
+
+    layout.separator()
+    if len(excluded) > 0 : 
+        layout.label(text=lbl)
+    for col in excluded : 
+        box = layout.box()
+        r = box.row(align=True)
+        r.label(text=col, icon=icon)
+        settings = r.operator(ops.RemoveExcluded.bl_idname, icon="X", text="")
+        settings.name = col
+        settings.camera = camname
+        settings.type = type
+    settings = layout.operator(ops.AddExcluded.bl_idname, icon=icon)
+    settings.camera = camname
+    settings.type = type
+
 class MCR_CameraSettingsPanel(bpy.types.Panel):
     bl_label = "Render Settings"
     bl_idname = "LPQFLV_PT_per_camera_render_settings"
@@ -565,6 +621,9 @@ class MCR_CameraSettingsPanel(bpy.types.Panel):
 #            c.prop(cam.renderSettings, "use_tiling") 
 #            c.prop(cam.renderSettings, "use_persistent_data") 
 
+        draw_excluded(c, cam.excluded_collections, context.object.name, "Collection")
+        draw_excluded(c, cam.excluded_objects, context.object.name, "Object")
+
 def drawAutoRenderOutputButton (self, context) : 
     l = self.layout
     r = l.row()
@@ -602,6 +661,8 @@ def register () :
     bpy.utils.register_class(MCR_CameraSettingsPanel)
     bpy.types.RENDER_PT_output.append(drawAutoRenderOutputButton)
     bpy.types.RENDER_PT_format.append(drawDefaultResolution)
+
+    bpy.utils.register_class(MCR_PipelinePropsPanel)
     
 def unregister () : 
     bpy.utils.unregister_class(FileTreeProps)
@@ -611,5 +672,6 @@ def unregister () :
     
     bpy.utils.unregister_class(MCR_MultiCamRenderPanelOK)
     bpy.utils.unregister_class(MCR_CameraSettingsPanel)
+    bpy.utils.unregister_class(MCR_PipelinePropsPanel)
 
     bpy.types.RENDER_PT_output.remove(drawAutoRenderOutputButton)

@@ -12,7 +12,7 @@ import os
 import mathutils
 
 class VSE_CreateShot(bl_ops.Operator) :
-    bl_idname = "mcr.create_shot"
+    bl_idname = "lpqflv_multicam_render.create_shot"
     bl_label = "Create a New Shot"
     bl_description = "Add a strip that will represent a new shot"
     
@@ -37,7 +37,7 @@ class VSE_CreateShot(bl_ops.Operator) :
         VSE_TransformToShot.transform(strip)
 
 class VSE_TransformToShot(bl_ops.Operator) :
-    bl_idname = "mcr.transform_to_shot"
+    bl_idname = "lpqflv_multicam_render.transform_to_shot"
     bl_label = "Set as Shot"
     bl_description = "Set the selected strip as a shot"
 
@@ -69,7 +69,7 @@ class VSE_TransformToShot(bl_ops.Operator) :
         strip.color_tag = "NONE"
 
 class VSE_TransformToSeq(bl_ops.Operator) :
-    bl_idname = "mcr.transform_to_seq"
+    bl_idname = "lpqflv_multicam_render.transform_to_seq"
     bl_label = "Set as Sequence"
     bl_description = "Set the selected strip as a strips"
 
@@ -98,7 +98,7 @@ class VSE_TransformToSeq(bl_ops.Operator) :
         strip.color_tag = "NONE"
 
 class VSE_CreateSeq(bl_ops.Operator) :
-    bl_idname = "mcr.create_seq"
+    bl_idname = "lpqflv_multicam_render.create_seq"
     bl_label = "Create a New Sequence"
     bl_description = "Create a new sequence from selected shots"
 
@@ -158,7 +158,7 @@ class VSE_CreateSeq(bl_ops.Operator) :
         strip.mapp.seq_name = user_name
 
 class VSE_SetCurrentShotTxt(bl_ops.Operator) :
-    bl_idname = "mcr.set_current_shot_txt"
+    bl_idname = "lpqflv_multicam_render.set_current_shot_txt"
     bl_label = "Set Current Shot Text"
     bl_description = "Set the text of the current shot under the cursor (not the selected one)"
 
@@ -182,7 +182,7 @@ class VSE_SetCurrentShotTxt(bl_ops.Operator) :
         return {'FINISHED'}
 
 class VSE_AddShotsToSeq(bl_ops.Operator) :
-    bl_idname = "mcr.add_shots_to_seq"
+    bl_idname = "lpqflv_multicam_render.add_shots_to_seq"
     bl_label = "Add selected Shots"
     bl_description = "Add the selected shots to this sequence"
     
@@ -222,7 +222,7 @@ class VSE_AddShotsToSeq(bl_ops.Operator) :
         return {'FINISHED'}
 
 class VSE_LinkShotsToSeq(bl_ops.Operator) :
-    bl_idname = "mcr.link_shots_to_seq"
+    bl_idname = "lpqflv_multicam_render.link_shots_to_seq"
     bl_label = "Link selected Shots"
     bl_description = "Link the selected shots to this sequence. Removing the old shots in the sequence."
     
@@ -260,7 +260,7 @@ class VSE_LinkShotsToSeq(bl_ops.Operator) :
         return {'FINISHED'}
 
 class VSE_UpdateSeqsUI(bl_ops.Operator) :
-    bl_idname = "mcr.update_seqs_ui"
+    bl_idname = "lpqflv_multicam_render.update_seqs_ui"
     bl_label = "Update Sequences"
     bl_description = "Update the channels and the frame start and end of all the strips from theire children"
     
@@ -273,7 +273,7 @@ class VSE_UpdateSeqsUI(bl_ops.Operator) :
         return {'FINISHED'}
 
 class VSE_OpenSeq(bpy.types.Operator) :
-    bl_idname = "mcr.open_seq"
+    bl_idname = "lpqflv_multicam_render.open_seq"
     bl_label = "Open this sequence"
     bl_description = "Open the file linked to this sequence.\nIf the file doesn't exist, it will be created."
 
@@ -319,7 +319,7 @@ class VSE_OpenSeq(bpy.types.Operator) :
         row.operator(ops.PIPE_UpdateInfos.bl_idname, icon="FILE_REFRESH", text="")
 
 class VSE_OpenEdit(bpy.types.Operator) :
-    bl_idname = "mcr.open_video_edit_file"
+    bl_idname = "lpqflv_multicam_render.open_video_edit_file"
     bl_label = "Open the Edit"
     bl_description = "Open the file where the video editing is done."
     @staticmethod
@@ -344,7 +344,7 @@ class VSE_OpenEdit(bpy.types.Operator) :
             self.layout.operator(VSE_OpenEdit.bl_idname, icon="SEQUENCE")
 
 class VSE_AddReviewToShot(bl_ops.Operator) :
-    bl_idname = "mcr.add_review_to_shot"
+    bl_idname = "lpqflv_multicam_render.add_review_to_shot"
     bl_label = "Add a Review"
     bl_description = "Create a text on the shot to review it and modify it later."
 

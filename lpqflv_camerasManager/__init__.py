@@ -20,8 +20,8 @@
 bl_info = {
     "name": "MAPP : Pipeline and Cameras Manager",
     "author": "Romain Gilliot",
-    "version": (7, 6, 0),
-    "blender" : (5, 0, 1),
+    "version": (7, 7, 0),
+    "blender" : (5, 1, 2),
     "location": "Pipeline Editor, Property Editor, VSE",
     "description": "Manage your project with an advanced Pipeline Tool.",
     "warning": "",
@@ -114,7 +114,8 @@ def register():
     cfg.PIPE = p.Pipeline()
     cfg.icons = ic.Icons() 
     
-    bpy.types.WindowManager.isAutoUpdateCam = bpy.props.BoolProperty(name="Auto camera change", description="Update the active camera when blender is playing...", default=False, update=cm.CameraManager.onAutoCameraChangeUpdate)  
+    bpy.types.Scene.isAutoUpdateCam = bpy.props.BoolProperty(name="Auto camera change", description="Update the active camera when blender is playing...", default=False, update=cm.CameraManager.onAutoCameraChangeUpdate)  
+    bpy.types.Scene.includeExcludedInAutoUpdate = bpy.props.BoolProperty(name="Auto update excluded", description="Auto update the visibility of the excluded collections and objects per camera", default=False, update=cm.CameraManager.onAutoExcludedUpdate)
     
     panels.register()
     ops.register()
